@@ -128,6 +128,7 @@ namespace {
             return generic_format_int(pbuffer, pformat, static_cast<int>(v));
         }
     }
+
 }   // anonymous namespace
 
 char const* format(output_buffer* pbuffer, char const* pformat, char v)
@@ -293,10 +294,28 @@ char const* template_formatter::next_specifier(output_buffer* pbuffer,
 
 void template_formatter::format(output_buffer* pbuffer, char const* pformat)
 {
-    auto len = std::strlen(pformat);
-    char* p = pbuffer->reserve(len);
-    std::memcpy(p, pformat, len);
-    pbuffer->commit(len);
+    // There are no remaining arguments to format, so we will ignore additional
+    // format specifications that might occur in the format string. However, we
+    // still need to treat "%%" as "%".
+#ifdef _GNU_SOURCE
+    while(true) {
+        char const* pspecifier = strchrnul(pformat, '%');
+        std::size_t len = pspecifier - pformat;
+        char* p = pbuffer->reserve(len);
+        std::memcpy(p, pformat, len);
+        pbuffer->commit(len);
+        if(*pspecifier != '%')
+            return;
+        p = pbuffer->reserve(1);
+        *p = '%';
+        pbuffer->commit(1);
+        ++pspecifier;
+        if(*pspecifier == '%')
+            ++pspecifier;
+    }
+#else
+    static_assert(false, "need replacement for strchrnul");
+#endif
 }
 
 }   // namespace reckless

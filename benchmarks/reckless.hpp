@@ -13,7 +13,7 @@ extern reckless::severity_log<reckless::no_indent, ' ', reckless::severity_field
     
 #define LOG_CLEANUP() g_log.close()
 
-#define LOG( c, i, f ) g_log.info("Hello World! %s %d %f", c, i, f)
+#define LOG( c, i, f ) g_log.info("Hello World! %s %d %f%%", c, i, f)
 
 #define LOG_FILE_WRITE(FileNumber, Percent) \
     g_log.info("file %d (%f%%)", FileNumber, Percent)
